@@ -1,139 +1,167 @@
 <?php
 
-DEFINE("S", "SOUTH");
-DEFINE("E", "EAST");
-DEFINE("N", "NORTH");
-DEFINE("W", "WEST");
+define("S", "SOUTH");
+define("E", "EAST");
+define("N", "NORTH");
+define("W", "WEST");
 define("DIRECTION_CHANGER", ["S", "N", "E", "W"]);
 
 class Bender {
 
-    public static $moveDirection = [S => E, E => N, N => W, W => S];
-    public static $array = [
-        0 => "#####",
-        1 => "#@  #",
-        2 => "#   #",
-        3 => "#  $#",
-        4 => "#####",
+    public $moveDirection = [S => E, E => N, N => W, W => S];
+    public $map = [
+        0 => "########",
+        1 => "#@    T#",
+        2 => "#      #",
+        3 => "#   T$ #",
+        4 => "########",
     ];
-    public static $test = " ";
-    public static $benderPositionX;
-    public static $benderPositionY;
-    public static $benderDirection = S;
-    public static $breaker = false;
+    public $test = " ";
+    public $benderPositionX;
+    public $benderPositionY;
+    public $benderDirection = S;
+    public $breaker = false;
+    public $teleport = [];
 
     // Find Bender Position, marked as @
-    public static function findBender() {
-        for ($i = 0; $i < count(self::$array); $i++) {
-            for ($j = 0; $j < strlen(self::$array[$i]); $j++) {
-                // echo self::$array[$i][$j];
-                if (self::$array[$i][$j] == "@") {
-                    self::$benderPositionX = $j;
-                    self::$benderPositionY = $i;
-                    echo " its Bender, and im on " . Bender::$benderPositionY . " and " . Bender::$benderPositionX . ". <br/>";
+    public function findBender() {
+        for ($i = 0; $i < count($this->map); $i++) {
+            for ($j = 0; $j < strlen($this->map[$i]); $j++) {
+                if ($this->map[$i][$j] == "@") {
+                    $this->benderPositionX = $j;
+                    $this->benderPositionY = $i;
+                    echo " its Bender, and im on X " . $this->benderPositionX . " and Y " . $this->benderPositionY . ". <br/>";
                 }
             }
         }
     }
 
     //Check out Bender position for all conditions
-    public static function checkPosition() {
-        $position = self::$array[self::$benderPositionY][self::$benderPositionX];
+    public function checkPosition() {
+        $position = $this->map[$this->benderPositionY][$this->benderPositionX];
         switch ($position) {
             case "#":
-                self::$benderDirection=self::$moveDirection[self::$benderDirection];
+                $this->benderDirection = $this->moveDirection[$this->benderDirection];
                 break;
             case "X":
-                self::$benderDirection=self::$moveDirection[self::$benderDirection];
+                if ($this->breaker) {
+                    $this->breaker = false;
+                } else {
+                    $this->benderDirection = $this->moveDirection[$this->benderDirection];
+                }
                 break;
             case "B":
-                self::$breaker = true;
+                if ($this->breaker) {
+                    $this->breaker = false;
+                } else {
+                    $this->breaker = true;
+                }
+
                 break;
             case "T":
-                
+                //find second Tp and Change currentPosition;
+                $this->teleport();
                 break;
             case "I":
-                
+                $this->moveDirection = array_flip($this->moveDirection);
                 break;
             case "S":
-                
+                $this->benderDirection = S;
                 break;
             case "E":
-                
+                $this->benderDirection = E;
                 break;
             case "N":
-                
+                $this->benderDirection = N;
                 break;
             case "W":
-                
+                $this->benderDirection = W;
                 break;
             default:
                 break;
         }
     }
 
-    public static function moveBender() {
-        switch (self::$benderDirection) {
+    public function moveBender() {
+        switch ($this->benderDirection) {
             case S:
-                self::$benderPositionY++;
+                $this->benderPositionY++;
 
                 break;
             case N:
-                self::$benderPositionY--;
+                $this->benderPositionY--;
 
                 break;
             case W:
-                self::$benderPositionX--;
+                $this->benderPositionX--;
 
                 break;
             case E:
-                self::$benderPositionX++;
+                $this->benderPositionX++;
 
                 break;
 
             default:
                 break;
         }
-        if (self::$array[self::$benderPositionY][self::$benderPositionX] == " ") {
-            self::$test = " empty cell";
+        if ($this->map[$this->benderPositionY][$this->benderPositionX] == " ") {
+            $this->test = " empty cell";
         } else {
-            self::$test = self::$array[self::$benderPositionY][self::$benderPositionX];
+            $this->test = $this->map[$this->benderPositionY][$this->benderPositionX];
         }
-        echo "Can i move on " . self::$test . " ?<br/>";
+        echo "Can i move on " . $this->test . " ?<br/>";
     }
 
-    public static function find() {
-        var_dump(self::$array[3][3]);
+    public function find() {
+        var_dump($this->map[3][3]);
+    }
+
+    //find teleports , marked as "T" and telepot Bender.
+    public function teleport() {
+        for ($i = 0; $i < count($this->map); $i++) {
+            for ($j = 0; $j < strlen($this->map[$i]); $j++) {
+                if ($this->map[$i][$j] == "T") {
+                    if (($j !== $this->benderPositionX) && ($i !== $this->benderPositionY)) {
+                        //   echo "I $testvar will port on  X = " . $j . " and Y = " . $i . "<br/>";
+                        //     $this->benderPositionX = $j;
+                        //      $this->benderPositionY = $i;
+                    }
+                    ////else {
+                    //echo "I $testvar will port on  X = " . $j . " and Y = " . $i . "<br/>";
+                    //}
+//                    $this->teleport[] = ["X"=>$j,"Y"=>$i];
+//              
+//                  echo " its " . $testvar . ", and im on " . $i . " and " . $j . ". <br/>";
+                    //    $testvar++;
+                }
+            }
+        }
     }
 
 }
 
 $pos = "N";
-var_dump(Bender::$array);
-var_dump(Bender::$moveDirection);
-Bender::$moveDirection = array_flip(Bender::$moveDirection);
-var_dump(Bender::$benderDirection);
-Bender::$benderDirection=Bender::$moveDirection[Bender::$benderDirection];
-var_dump(Bender::$benderDirection);
-Bender::$benderDirection=Bender::$moveDirection[Bender::$benderDirection];
-var_dump(Bender::$benderDirection);
-Bender::$benderDirection=Bender::$moveDirection[Bender::$benderDirection];
-var_dump(Bender::$benderDirection);
-Bender::$benderDirection=Bender::$moveDirection[Bender::$benderDirection];
-var_dump(Bender::$benderDirection);
-Bender::$benderDirection=Bender::$moveDirection[Bender::$benderDirection];
-var_dump(Bender::$benderDirection);
+$Bender = New Bender();
+var_dump($Bender->map);
 print_r(DIRECTION_CHANGER);
 if (in_array($pos, DIRECTION_CHANGER)) {
     echo "Yeee<br/>";
 }
-Bender::findBender();
+$Bender->findBender();
 
+$Bender->benderPositionX = 6;
+$Bender->benderPositionY = 1;
+$Bender->teleport();
+//foreach($Bender->teleport as $position){
+//    if (($position["X"] == $Bender->benderPositionX) && ($position["Y"] == $Bender->benderPositionY)){
+//        echo "This teleport on my position with coords X = " . $position["X"] . " and Y = " . $position["Y"] . "<br/>";
+//    } else {
+//        echo "I will port on  X = " . $position["X"] . " and Y = " . $position["Y"] . "<br/>";
+//    }
+//}
+var_dump($Bender->teleport);
+$Bender->moveBender();
+$Bender->moveBender();
+$Bender->moveBender();
 
-Bender::moveBender();
-Bender::moveBender();
-Bender::moveBender();
-
-$files = scandir(__DIR__);
-var_dump($files);
 ?>
